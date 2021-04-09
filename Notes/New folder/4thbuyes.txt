@@ -1,0 +1,49 @@
+2. Summarize Data
+The naive bayes model is comprised of a summary of the data in the training dataset. This summary is then used when making predictions.
+
+The summary of the training data collected involves the mean and the standard deviation for each attribute, by class value. For example, if there are two class values and 7 numerical attributes, then we need a mean and standard deviation for each attribute (7) and class value (2) combination, that is 14 attribute summaries.
+
+These are required when making predictions to calculate the probability of specific attribute values belonging to each class value.
+
+We can break the preparation of this summary data down into the following sub-tasks:
+
+Separate Data By Class
+Calculate Mean
+Calculate Standard Deviation
+Summarize Dataset
+Summarize Attributes By Class
+Separate Data By Class
+The first task is to separate the training dataset instances by class value so that we can calculate statistics for each class. We can do that by creating a map of each class value to a list of instances that belong to that class and sort the entire dataset of instances into the appropriate lists.
+
+The separateByClass() function below does just this.
+
+1
+2
+3
+4
+5
+6
+7
+8
+def separateByClass(dataset):
+	separated = {}
+	for i in range(len(dataset)):
+		vector = dataset[i]
+		if (vector[-1] not in separated):
+			separated[vector[-1]] = []
+		separated[vector[-1]].append(vector)
+	return separated
+
+-------------
+You can see that the function assumes that the last attribute (-1) is the class value. The function returns a map of class values to lists of data instances.
+
+We can test this function with some sample data, as follows:
+
+Testing the separateByClass() function
+dataset = [[1,20,1], [2,21,0], [3,22,1]]
+separated = separateByClass(dataset)
+print('Separated instances: {0}').format(separated)
+
+dataset = [[1,20,1], [2,21,0], [3,22,1]]
+separated = separateByClass(dataset)
+print('Separated instances: {0}').format(separated)

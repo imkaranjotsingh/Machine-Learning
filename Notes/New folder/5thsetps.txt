@@ -1,0 +1,125 @@
+Calculate Mean
+We need to calculate the mean of each attribute for a class value. The mean is the central middle or central tendency of the data, and we will use it as the middle of our gaussian distribution when calculating probabilities.
+
+We also need to calculate the standard deviation of each attribute for a class value. The standard deviation describes the variation of spread of the data, and we will use it to characterize the expected spread of each attribute in our Gaussian distribution when calculating probabilities.
+
+The standard deviation is calculated as the square root of the variance. The variance is calculated as the average of the squared differences for each attribute value from the mean. Note we are using the N-1 method, which subtracts 1 from the number of attribute values when calculating the variance.
+
+Functions to calculate the mean and standard deviations of attributes
+import math
+def mean(numbers):
+	return sum(numbers)/float(len(numbers))
+
+def stdev(numbers):
+	avg = mean(numbers)
+	variance = sum([pow(x-avg,2) for x in numbers])/float(len(numbers)-1)
+	return math.sqrt(variance)
+1
+2
+3
+4
+5
+6
+7
+8
+import math
+def mean(numbers):
+	return sum(numbers)/float(len(numbers))
+ 
+def stdev(numbers):
+	avg = mean(numbers)
+	variance = sum([pow(x-avg,2) for x in numbers])/float(len(numbers)-1)
+	return math.sqrt(variance)
+
+
+
+-----------------
+We can test this by taking the mean of the numbers from 1 to 5.
+
+numbers = [1,2,3,4,5]
+print('Summary of {0}: mean={1}, stdev={2}').format(numbers, mean(numbers), stdev(numbers))
+
+numbers = [1,2,3,4,5]
+print('Summary of {0}: mean={1}, stdev={2}').format(numbers, mean(numbers), stdev(numbers))
+Running this test, you should see something like:
+
+Output of testing the mean() and stdev() functions
+Summary of [1, 2, 3, 4, 5]: mean=3.0, stdev=1.58113883008
+
+Summary of [1, 2, 3, 4, 5]: mean=3.0, stdev=1.58113883008
+---------------------------------
+
+
+
+Summarize Dataset
+Now we have the tools to summarize a dataset. For a given list of instances (for a class value) we can calculate the mean and the standard deviation for each attribute.
+
+The zip function groups the values for each attribute across our data instances into their own lists so that we can compute the mean and standard deviation values for the attribute.
+
+def summarize(dataset):
+	summaries = [(mean(attribute), stdev(attribute)) for attribute in zip(*dataset)]
+	del summaries[-1]
+	return summaries
+1
+2
+3
+4
+def summarize(dataset):
+	summaries = [(mean(attribute), stdev(attribute)) for attribute in zip(*dataset)]
+	del summaries[-1]
+	return summaries
+We can test this summarize() function with some test data that shows markedly different mean and standard deviation values for the first and second data attributes.
+
+dataset = [[1,20,0], [2,21,1], [3,22,0]]
+summary = summarize(dataset)
+print('Attribute summaries: {0}').format(summary)
+1
+2
+3
+dataset = [[1,20,0], [2,21,1], [3,22,0]]
+summary = summarize(dataset)
+print('Attribute summaries: {0}').format(summary)
+Running this test, you should see something like:
+
+Attribute summaries: [(2.0, 1.0), (21.0, 1.0)]
+1
+Attribute summaries: [(2.0, 1.0), (21.0, 1.0)]
+Summarize Attributes By Class
+We can pull it all together by first separating our training dataset into instances grouped by class. Then calculate the summaries for each attribute.
+
+
+
+
+1
+2
+3
+4
+5
+6
+def summarizeByClass(dataset):
+	separated = separateByClass(dataset)
+	summaries = {}
+	for classValue, instances in separated.iteritems():
+		summaries[classValue] = summarize(instances)
+	return summaries
+We can test this summarizeByClass() function with a small test dataset.
+
+dataset = [[1,20,1], [2,21,0], [3,22,1], [4,22,0]]
+summary = summarizeByClass(dataset)
+print('Summary by class value: {0}').format(summary)
+1
+2
+3
+dataset = [[1,20,1], [2,21,0], [3,22,1], [4,22,0]]
+summary = summarizeByClass(dataset)
+print('Summary by class value: {0}').format(summary)
+Running this test, you should see something like:
+
+Output from testing the summarizeByClass() function
+Summary by class value: 
+{0: [(3.0, 1.4142135623730951), (21.5, 0.7071067811865476)], 
+1: [(2.0, 1.4142135623730951), (21.0, 1.4142135623730951)]}
+
+Summary by class value: 
+{0: [(3.0, 1.4142135623730951), (21.5, 0.7071067811865476)], 
+1: [(2.0, 1.4142135623730951), (21.0, 1.4142135623730951)]}

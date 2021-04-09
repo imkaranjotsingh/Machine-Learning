@@ -1,0 +1,232 @@
+3. Make Prediction
+We are now ready to make predictions using the summaries prepared from our training data. Making predictions involves calculating the probability that a given data instance belongs to each class, then selecting the class with the largest probability as the prediction.
+
+We can divide this part into the following tasks:
+
+Calculate Gaussian Probability Density Function
+Calculate Class Probabilities
+Make a Prediction
+Estimate Accuracy
+Calculate Gaussian Probability Density Function
+We can use a Gaussian function to estimate the probability of a given attribute value, given the known mean and standard deviation for the attribute estimated from the training data.
+
+Given that the attribute summaries where prepared for each attribute and class value, the result is the conditional probability of a given attribute value given a class value.
+
+See the references for the details of this equation for the Gaussian probability density function. In summary we are plugging our known details into the Gaussian (attribute value, mean and standard deviation) and reading off the likelihood that our attribute value belongs to the class.
+
+In the calculateProbability() function we calculate the exponent first, then calculate the main division. This lets us fit the equation nicely on two lines.
+
+import math
+def calculateProbability(x, mean, stdev):
+	exponent = math.exp(-(math.pow(x-mean,2)/(2*math.pow(stdev,2))))
+	return (1 / (math.sqrt(2*math.pi) * stdev)) * exponent
+1
+2
+3
+4
+import math
+def calculateProbability(x, mean, stdev):
+	exponent = math.exp(-(math.pow(x-mean,2)/(2*math.pow(stdev,2))))
+	return (1 / (math.sqrt(2*math.pi) * stdev)) * exponent
+We can test this with some sample data, as follows.
+
+x = 71.5
+mean = 73
+stdev = 6.2
+probability = calculateProbability(x, mean, stdev)
+print('Probability of belonging to this class: {0}').format(probability)
+1
+2
+3
+4
+5
+x = 71.5
+mean = 73
+stdev = 6.2
+probability = calculateProbability(x, mean, stdev)
+print('Probability of belonging to this class: {0}').format(probability)
+Running this test, you should see something like:
+
+Probability of belonging to this class: 0.0624896575937
+1
+Probability of belonging to this class: 0.0624896575937
+Calculate Class Probabilities
+Now that we can calculate the probability of an attribute belonging to a class, we can combine the probabilities of all of the attribute values for a data instance and come up with a probability of the entire data instance belonging to the class.
+
+We combine probabilities together by multiplying them. In the calculateClassProbabilities() below, the probability of a given data instance is calculated by multiplying together the attribute probabilities for each class. the result is a map of class values to probabilities.
+
+def calculateClassProbabilities(summaries, inputVector):
+	probabilities = {}
+	for classValue, classSummaries in summaries.iteritems():
+		probabilities[classValue] = 1
+		for i in range(len(classSummaries)):
+			mean, stdev = classSummaries[i]
+			x = inputVector[i]
+			probabilities[classValue] *= calculateProbability(x, mean, stdev)
+	return probabilities
+1
+2
+3
+4
+5
+6
+7
+8
+9
+def calculateClassProbabilities(summaries, inputVector):
+	probabilities = {}
+	for classValue, classSummaries in summaries.iteritems():
+		probabilities[classValue] = 1
+		for i in range(len(classSummaries)):
+			mean, stdev = classSummaries[i]
+			x = inputVector[i]
+			probabilities[classValue] *= calculateProbability(x, mean, stdev)
+	return probabilities
+We can test the calculateClassProbabilities() function.
+
+summaries = {0:[(1, 0.5)], 1:[(20, 5.0)]}
+inputVector = [1.1, '?']
+probabilities = calculateClassProbabilities(summaries, inputVector)
+print('Probabilities for each class: {0}').format(probabilities)
+1
+2
+3
+4
+summaries = {0:[(1, 0.5)], 1:[(20, 5.0)]}
+inputVector = [1.1, '?']
+probabilities = calculateClassProbabilities(summaries, inputVector)
+print('Probabilities for each class: {0}').format(probabilities)
+Running this test, you should see something like:
+
+Probabilities for each class: {0: 0.7820853879509118, 1: 6.298736258150442e-05}
+1
+Probabilities for each class: {0: 0.7820853879509118, 1: 6.298736258150442e-05}
+Make a Prediction
+Now that can calculate the probability of a data instance belonging to each class value, we can look for the largest probability and return the associated class.
+
+The predict() function belong does just that.
+
+def predict(summaries, inputVector):
+	probabilities = calculateClassProbabilities(summaries, inputVector)
+	bestLabel, bestProb = None, -1
+	for classValue, probability in probabilities.iteritems():
+		if bestLabel is None or probability > bestProb:
+			bestProb = probability
+			bestLabel = classValue
+	return bestLabel
+1
+2
+3
+4
+5
+6
+7
+8
+def predict(summaries, inputVector):
+	probabilities = calculateClassProbabilities(summaries, inputVector)
+	bestLabel, bestProb = None, -1
+	for classValue, probability in probabilities.iteritems():
+		if bestLabel is None or probability > bestProb:
+			bestProb = probability
+			bestLabel = classValue
+	return bestLabel
+We can test the predict() function as follows:
+
+summaries = {'A':[(1, 0.5)], 'B':[(20, 5.0)]}
+inputVector = [1.1, '?']
+result = predict(summaries, inputVector)
+print('Prediction: {0}').format(result)
+1
+2
+3
+4
+summaries = {'A':[(1, 0.5)], 'B':[(20, 5.0)]}
+inputVector = [1.1, '?']
+result = predict(summaries, inputVector)
+print('Prediction: {0}').format(result)
+Running this test, you should see something like:
+
+Prediction: A
+1
+Prediction: A
+4. Make Predictions
+Finally, we can estimate the accuracy of the model by making predictions for each data instance in our test dataset. The getPredictions() will do this and return a list of predictions for each test instance.
+
+def getPredictions(summaries, testSet):
+	predictions = []
+	for i in range(len(testSet)):
+		result = predict(summaries, testSet[i])
+		predictions.append(result)
+	return predictions
+1
+2
+3
+4
+5
+6
+def getPredictions(summaries, testSet):
+	predictions = []
+	for i in range(len(testSet)):
+		result = predict(summaries, testSet[i])
+		predictions.append(result)
+	return predictions
+We can test the getPredictions() function.
+
+summaries = {'A':[(1, 0.5)], 'B':[(20, 5.0)]}
+testSet = [[1.1, '?'], [19.1, '?']]
+predictions = getPredictions(summaries, testSet)
+print('Predictions: {0}').format(predictions)
+1
+2
+3
+4
+summaries = {'A':[(1, 0.5)], 'B':[(20, 5.0)]}
+testSet = [[1.1, '?'], [19.1, '?']]
+predictions = getPredictions(summaries, testSet)
+print('Predictions: {0}').format(predictions)
+Running this test, you should see something like:
+
+Predictions: ['A', 'B']
+1
+Predictions: ['A', 'B']
+5. Get Accuracy
+The predictions can be compared to the class values in the test dataset and a classification accuracy can be calculated as an accuracy ratio between 0& and 100%. The getAccuracy() will calculate this accuracy ratio.
+
+def getAccuracy(testSet, predictions):
+	correct = 0
+	for x in range(len(testSet)):
+		if testSet[x][-1] == predictions[x]:
+			correct += 1
+	return (correct/float(len(testSet))) * 100.0
+1
+2
+3
+4
+5
+6
+def getAccuracy(testSet, predictions):
+	correct = 0
+	for x in range(len(testSet)):
+		if testSet[x][-1] == predictions[x]:
+			correct += 1
+	return (correct/float(len(testSet))) * 100.0
+We can test the getAccuracy() function using the sample code below.
+
+testSet = [[1,1,1,'a'], [2,2,2,'a'], [3,3,3,'b']]
+predictions = ['a', 'a', 'a']
+accuracy = getAccuracy(testSet, predictions)
+print('Accuracy: {0}').format(accuracy)
+1
+2
+3
+4
+testSet = [[1,1,1,'a'], [2,2,2,'a'], [3,3,3,'b']]
+predictions = ['a', 'a', 'a']
+accuracy = getAccuracy(testSet, predictions)
+print('Accuracy: {0}').format(accuracy)
+Running this test, you should see something like:
+
+Output from testing the getAccuracy() function
+Accuracy: 66.6666666667
+1
+Accuracy: 66.6666666667
