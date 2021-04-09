@@ -1,0 +1,53 @@
+https://towardsdatascience.com/how-to-use-facebook-graph-api-and-extract-data-using-python-1839e19d6999
+
+
+
+
+The unofficial fork of the python sdk is still working fine for me.
+
+To retrieve your friends, generate an access token here: https://developers.facebook.com/tools/access_token/
+
+Limitations:
+
+A user access token with user_friends permission is required to view the current person's friends.
+This will only return any friends who have used (via Facebook Login) the app making the request.
+If a friend of the person declines the user_friends permission, that friend will not show up in the friend list for this person.
+
+
+
+
+import facebook
+
+token = 'your token'
+
+graph = facebook.GraphAPI(token)
+profile = graph.get_object("me")
+friends = graph.get_connections("me", "friends")
+
+friend_list = [friend['name'] for friend in friends['data']]
+
+print friend_list
+--------------------------
+
+from facebook import Facebook
+
+api_key = '123456789______'
+secret  = '<proper secret key>'
+OTK = 'XXXXX' # <-- You get this from: https://www.facebook.com/code_gen.php?v=1.0&api_key=123456789______
+long_term_key = None
+
+fb = Facebook(api_key, secret)
+
+def generate_session_from_onetime_code(fb, code):
+    fb.auth_token = code
+    return fb.auth.getSession()
+if not long_term_key:
+    long_term_key = generate_session_from_onetime_code(fb, OTK)['session_key']
+    print 'Replace None with this in the .py file for long_term_key:'
+    print long_term_key
+
+fb.session_key = long_term_key
+fb.uid = 000000001  # <-- Your user-id
+fb.signature = api_key # <-- This doesn't work at all, MD5 of what?
+#fb.validate_signature(fb) # <-- doesn't work either, prob need to pass MD5 handle?
+print fb.friends.get() # <-- Generates "Invalid Signature"
